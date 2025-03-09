@@ -1,5 +1,5 @@
 #include <iostream>
-#include "INI-Parser.h"
+#include "../INI-Parser.h"
 using namespace std;
 
 void load_ini_file() {
@@ -28,7 +28,7 @@ void save_ini_file() {
 
 void load_ini_file_X() {
     IniParserX iniParserX;
-    iniParserX.load_ini_file("D:\\Coding\\MyParser\\Complex.ini");
+    iniParserX.load_ini_file("Complex.ini");
     for (auto &i : iniParserX.all_sections()) {
         cout << "[" << i << "]\n";
         for (auto &j : iniParserX.all_keys(i)) {
@@ -47,12 +47,10 @@ void load_ini_file_X() {
 void save_ini_file_X() {
     IniParserX ini("Test.ini", false);
     std::vector<std::string> items = {"C", "C++", "Java", "Python", "Go"};
-    std::vector<std::string> hobbies = {"Running", "Football"};
-//    ini.add_key("Language", "item[]", "CCC");
+    std::vector<std::string> hobbies = {"Running", "Football", "Basketball"};
     ini.add_array("Language", "items", items);
     ini.add_array("Hobby", "items", hobbies);
-//    ini.remove_array("Language", "items");
-//    ini.remove_key("Language", "items");
+    ini.remove_array("Language", "items");
     ini.save_ini_file();
     std::cout << "File Test.ini saved successfully!\n";
 }
