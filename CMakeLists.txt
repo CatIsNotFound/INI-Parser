@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(MyParser CXX)
-
+project(INI-Parser)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-add_library(STATIC INI-Parser.h)
+add_library(INI-Parser INTERFACE)
+target_include_directories(INI-Parser INTERFACE ${CMAKE_CURRENT_LIST_DIR})
+target_sources(INI-Parser INTERFACE ${CMAKE_CURRENT_LIST_DIR}/INI-Parser.h)

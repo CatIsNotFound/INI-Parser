@@ -3,6 +3,7 @@
  * INI-Parser ver 1.0                                              *
  * Copyright (c) 2025 CatIsNotFound <liaoxinkai0408@outlook.com>   *
  * Repository: https://github.com/CatIsNotFound/INI-Parser.git     *
+ * License: MIT                                                    *
  *******************************************************************/
 
 #ifndef MYPARSER_INI_PARSER_H
