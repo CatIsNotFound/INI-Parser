@@ -90,6 +90,7 @@ public:
      * @param file_path Specify the files to be loaded and parsed
      * @return Returns true or false to indicate whether the file was successfully loaded and parsed.
      * @notes e.g: If you want to load config file `D:\\MyApp\\config.ini`, just add it:
+     *
      * @code{.cpp}
      * iniParser.load_ini_file("D:\\MyApp\\config.ini");
      * @endcode
@@ -112,13 +113,25 @@ public:
      * @brief Save all configurations as INI format files.
      * @param file_path Path of the file to be saved.
      * @exception FileLoadedError Thrown when the parser can not write in the file.
+     *
+     * @note If you want to save the current configuration the current file path, just use:
+     * @code{.cpp}
+     * iniParser.save_ini_file();
+     * @endcode
+     * @note If you want to get the current file path, use:
+     * @code{.cpp}
+     * iniParser.file_path();
+     * @endcode
      */
     virtual void save_ini_file(const std::string &file_path) {
         std::ofstream file(file_path);
         if (!file.is_open()) throw FileLoadedError();
         for (auto& i : builder) {
             file << "[" << i.first << "]\n";
-            for (auto& j : i.second) file << j.first << " = " << j.second << std::endl;
+            for (auto& j : i.second) {
+                if (j.second.empty()) file << j.first << " = null" << std::endl;
+                else file << j.first << " = " << j.second << std::endl;
+            }
             file << std::endl;
             file.flush();
         }
@@ -194,7 +207,7 @@ public:
     /**
      * @brief Get all sections in the current file
      * 
-     * @return std::vector<std::string> Return all sections in the current file.
+     * @return Return all sections in the current file.
      */
     std::vector<std::string> all_sections() const {
         std::vector<std::string> sections;
@@ -261,7 +274,7 @@ protected:
         std::string value;
         if (sp != std::string::npos) {
             std::string key = buffer.substr(0, sp);
-            if (sq != std::string::npos) value = buffer.substr(sp + 1, sq - sp - 1);
+            if (sq != std::string::npos) { value = buffer.substr(sp + 1, sq - sp - 1); }
             else value = buffer.substr(sp + 1);
             key = strip(key); value = strip(value);
             builder[section][key] = value;
@@ -276,6 +289,7 @@ protected:
 
     static std::string strip(std::string &s) {
         size_t st = s.find_first_not_of(' '), ed = s.find_last_not_of(' ');
+        if (st == std::string::npos) return "";
         return s.substr(st, ed - st + 1);
     }
     static bool validate_file (const std::string path) { return std::fstream(path).is_open(); }
@@ -363,7 +377,7 @@ public:
      * @brief Get the length of the array which is associated with the specified key
      * 
      * @param key Formatting keywords, e.g. `Config/path`.
-     * @return size_t Return the length of the array.
+     * @return Return the length of the array.
      */
     size_t size_of_array(const std::string &key) const {
         std::string real_key = get_array_name(key);
@@ -375,7 +389,7 @@ public:
      * 
      * @param section Section name.
      * @param key Key name.
-     * @return size_t Return the length of the array.
+     * @return Return the length of the array.
      */
     size_t size_of_array(const std::string &section, const std::string &key) const {
         std::string real_key = get_array_name(key);
@@ -389,7 +403,7 @@ public:
      * @param section Section name
      * @param key Key name
      * @param index Index of the array element.
-     * @return std::string Return the value of the array element.
+     * @return Return the value of the array element.
      * 
      * @exception KeyNotArray Thrown if the key is not an array.
      */
@@ -404,7 +418,7 @@ public:
      * 
      * @param key Formatting keywords, e.g. `Config/path`.
      * @param index Index of the array element.
-     * @return std::string Return the value of the array element.
+     * @return Return the value of the array element.
      * 
      * @exception KeyNotArray Thrown if the key is not an array.
      */
@@ -430,6 +444,26 @@ public:
             arrays[k].assign(array.begin(), array.end());
         } else {
             throw KeyAlreadyExist();
+        }
+    }
+
+    /**
+     * @brief Replace an array to the specified key
+     *
+     * @param section Section name
+     * @param key Key name
+     * @param array Array to replace, must be a vector of strings.
+     *
+     * @exception KeyNotArray Thrown if the specified key is not an array
+     */
+    void replace_array (const std::string& section, const std::string& key, const std::vector<std::string>& array) {
+        std::string real_key = get_array_name(key);
+        std::string k = section + "/" + real_key;
+        if (is_array(section, key)) {
+            IniParser::builder[section][key + "[]"] = array.back();
+            arrays[k].assign(array.begin(), array.end());
+        } else {
+            throw KeyNotArray();
         }
     }
 
@@ -485,7 +519,7 @@ public:
      * @brief Get the value of a specified key
      * 
      * @param key Formatting keywords, e.g. `Config/path`.
-     * @return std::string& Return the value of the specified key.
+     * @return Return the value of the specified key.
      * 
      * @exception KeyNotFound Thrown when the specified key is not found.
      * @exception KeyIsArray Thrown when the specified key is an array.
@@ -505,7 +539,7 @@ public:
      * 
      * @param section Section name
      * @param key Key name
-     * @return std::string& Return the value of the specified key.
+     * @return Return the value of the specified key.
      * 
      * @exception KeyNotFound Thrown when the specified key is not found.
      * @exception KeyIsArray Thrown when the specified key is an array.
@@ -517,7 +551,7 @@ public:
         return builder[section][key];
     }
 
-    std::string& operator[](const std::string &key) {
+    std::string& operator[](const std::string &key) override {
         auto x = key.find('/');
         if (x == std::string::npos) throw KeyNotFound();
         if (!include(key.substr(0, x))) throw KeyNotFound();
@@ -526,6 +560,8 @@ public:
         std::string subsection = key.substr(x + 1);
         return builder[section][subsection];
     }
+
+
 
 protected:
     bool parse_inline(const std::string& buffer) final {
@@ -536,7 +572,7 @@ protected:
         std::string value;
         if (sp != std::string::npos) {
             std::string key = buffer.substr(0, sp);
-            if (sq != std::string::npos) value = buffer.substr(sp + 1, sq - sp - 1);
+            if (sq != std::string::npos) { value = buffer.substr(sp + 1, sq - sp - 1); }
             else value = buffer.substr(sp + 1);
             key = strip(key); value = strip(value);
             auto point = key.find("[]");

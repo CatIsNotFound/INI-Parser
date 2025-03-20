@@ -3,7 +3,7 @@
 using namespace std;
 
 void load_ini_file() {
-    IniParser iniParser("Demo.ini");
+    IniParser iniParser("./Demo/Demo.ini");
     for (auto &i : iniParser.all_sections()) {
         cout << "[" << i << "]\n";
         for (auto &j : iniParser.all_keys(i)) {
@@ -20,7 +20,7 @@ void save_ini_file() {
     iniParser.add_key("Profile", "Address", "123 Main St");
     iniParser.add_key("Config", "Language", "English");
     iniParser.add_key("Config", "Theme", "Dark");
-    iniParser["Config/save_passwd"] = "false";
+    iniParser.add_key("Config", "save_passwd", "false");
     iniParser.value("Config/save_passwd") = "true";
     iniParser.save_ini_file();
     cout << "Save " << iniParser.file_path() << " successfully.\n";
@@ -28,7 +28,7 @@ void save_ini_file() {
 
 void load_ini_file_X() {
     IniParserX iniParserX;
-    iniParserX.load_ini_file("Complex.ini");
+    iniParserX.load_ini_file("./Demo/Complex.ini");
     for (auto &i : iniParserX.all_sections()) {
         cout << "[" << i << "]\n";
         for (auto &j : iniParserX.all_keys(i)) {
@@ -56,9 +56,9 @@ void save_ini_file_X() {
 }
 
 int main() {
-    load_ini_file();
-    save_ini_file();
-    load_ini_file_X();
-    save_ini_file_X();
+//    load_ini_file();
+//    save_ini_file();
+//    load_ini_file_X();
+//    save_ini_file_X();
     return 0;
 }
